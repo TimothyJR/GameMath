@@ -1,0 +1,17 @@
+#pragma once
+#include <WICTextureLoader.h>
+#include "DirectXGameCore.h"
+#include "d3d11.h"
+
+class Texture
+{
+public:
+	Texture(ID3D11Device&, ID3D11DeviceContext&, const wchar_t* path);
+	~Texture();
+	ID3D11ShaderResourceView* GetResourceView();
+	ID3D11SamplerState* GetSampler();
+
+private:
+	ID3D11ShaderResourceView* resourceView;
+	ID3D11SamplerState* sampler;
+};

@@ -1,4 +1,11 @@
-# Prerequisites
+[Pp]ackages/
+[Dd]ebug/*
+[Rr]elease/*
+GameMath/[Dd]ebug/*
+GameMath/[Rr]elease/*
+.vs/
+
+ Prerequisites
 *.d
 
 # Compiled Object files
@@ -30,3 +37,7 @@
 *.exe
 *.out
 *.app
+
+*.user
+packages.config
+*.orig
