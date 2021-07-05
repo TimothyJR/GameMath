@@ -1,14 +1,14 @@
 #include "Material.h"
 
-Material::Material(SimpleVertexShader* v, SimplePixelShader* p, Texture* tex)
-	: texture(tex)
+Material::Material(SimpleVertexShader* v, SimplePixelShader* p, const std::shared_ptr<Texture>& tex) :
+	vertexShader(v),
+	pixelShader(p),
+	texture(tex),
+	color(1.0f, 1.0f, 1.0f, 1.0f)
 {
-	vertexShader = v;
-	pixelShader = p;
-	color = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
-void Material::Draw(Camera& camera, DirectionalLight& light,DirectX::XMFLOAT4X4 world)
+void Material::Draw(const Camera& camera, const DirectionalLight& light, const DirectX::XMFLOAT4X4 world)
 {
 	vertexShader->SetMatrix4x4("view", camera.GetViewMatrix());
 	vertexShader->SetMatrix4x4("projection", camera.GetProjectionMatrix());
@@ -23,29 +23,29 @@ void Material::Draw(Camera& camera, DirectionalLight& light,DirectX::XMFLOAT4X4 
 	pixelShader->SetShader(true);
 }
 
-SimpleVertexShader* Material::GetVertexShader()
+SimpleVertexShader* Material::GetVertexShader() const
 {
 	return vertexShader;
 }
 
-SimplePixelShader* Material::GetPixelShader()
+SimplePixelShader* Material::GetPixelShader() const
 {
 	return pixelShader;
 }
 
-Texture* Material::GetTexture()
+std::shared_ptr<Texture> Material::GetTexture() const
 {
 	return texture;
 }
 
-DirectX::XMFLOAT4 Material::GetColor()
+DirectX::XMFLOAT4 Material::GetColor() const
 {
 	return color;
 }
 
 void Material::SetTexture(Texture& tex)
 {
-	texture = &tex;
+	texture.reset(&tex);
 }
 
 void Material::SetColor(DirectX::XMFLOAT4 c)

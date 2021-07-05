@@ -1,31 +1,27 @@
 #include "BoxCollider.h"
 
-BoxCollider::BoxCollider(DirectX::XMFLOAT3& c, DirectX::XMFLOAT3& d, Transform& t) :
-	center(c), dimensions(d), transform(&t)
+BoxCollider::BoxCollider(const DirectX::XMFLOAT3& c, const DirectX::XMFLOAT3& d, const std::shared_ptr<Transform>& t) :
+	center(c), dimensions(d), transform(t)
 {
 	GenerateAABB();
 }
 
-BoxCollider::BoxCollider(Mesh& mesh, Transform& t) :
-	transform(&t)
-{
-	center = mesh.GetCentroid();
-
-	dimensions =
-	{
+BoxCollider::BoxCollider(const Mesh& mesh, const std::shared_ptr<Transform>& t) :
+	center(mesh.GetCentroid()),
+	dimensions(
+		{
 		mesh.GetMax().x - mesh.GetMin().x,
 		mesh.GetMax().y - mesh.GetMin().y,
 		mesh.GetMax().z - mesh.GetMin().z
-	};
-
-	rotatedDimensions = dimensions;
-
+		}),
+	rotatedDimensions(dimensions),
+	transform(t)
+{
 	GenerateAABB();
 }
 
 BoxCollider::~BoxCollider()
 {
-	delete verts;
 }
 
 void BoxCollider::GenerateAABB()
@@ -33,36 +29,33 @@ void BoxCollider::GenerateAABB()
 	float halfWidth = dimensions.x / 2;
 	float halfHeight = dimensions.y / 2;
 	float halfDepth = dimensions.z / 2;
-	DirectX::XMFLOAT3 v[8] =
-	{
-		DirectX::XMFLOAT3(-halfWidth, -halfHeight, -halfDepth),
-		DirectX::XMFLOAT3(-halfWidth, -halfHeight, halfDepth),
-		DirectX::XMFLOAT3(-halfWidth, halfHeight, -halfDepth),
-		DirectX::XMFLOAT3(-halfWidth, halfHeight, halfDepth),
-		DirectX::XMFLOAT3(halfWidth, halfHeight, halfDepth),
-		DirectX::XMFLOAT3(halfWidth, halfHeight, -halfDepth),
-		DirectX::XMFLOAT3(halfWidth, -halfHeight, halfDepth),
-		DirectX::XMFLOAT3(halfWidth, -halfHeight, -halfDepth)
-	};
+
+
+	verts[0] = DirectX::XMFLOAT3(-halfWidth, -halfHeight, -halfDepth);
+	verts[1] = DirectX::XMFLOAT3(-halfWidth, -halfHeight, halfDepth);
+	verts[2] = DirectX::XMFLOAT3(-halfWidth, halfHeight, -halfDepth);
+	verts[3] = DirectX::XMFLOAT3(-halfWidth, halfHeight, halfDepth);
+	verts[4] = DirectX::XMFLOAT3(halfWidth, halfHeight, halfDepth);
+	verts[5] = DirectX::XMFLOAT3(halfWidth, halfHeight, -halfDepth);
+	verts[6] = DirectX::XMFLOAT3(halfWidth, -halfHeight, halfDepth);
+	verts[7] = DirectX::XMFLOAT3(halfWidth, -halfHeight, -halfDepth);
 
 	for (int i = 0; i < 8; i++)
 	{
-		v[i] = transform->GetRotation().RotateVector(v[i]);
+		verts[i] = transform->GetRotation().RotateVector(verts[i]);
 	}
 
-	verts = v;
-
-	DirectX::XMFLOAT3 min = v[0];
-	DirectX::XMFLOAT3 max = v[0];
+	DirectX::XMFLOAT3 min = verts[0];
+	DirectX::XMFLOAT3 max = verts[0];
 
 	for (int i = 1; i < 8; i++)
 	{
-		min.x = std::min(min.x, v[i].x);
-		max.x = std::max(max.x, v[i].x);
-		min.y = std::min(min.y, v[i].y);
-		max.y = std::max(max.y, v[i].y);
-		min.z = std::min(min.z, v[i].z);
-		max.z = std::max(max.z, v[i].z);
+		min.x = std::min(min.x, verts[i].x);
+		max.x = std::max(max.x, verts[i].x);
+		min.y = std::min(min.y, verts[i].y);
+		max.y = std::max(max.y, verts[i].y);
+		min.z = std::min(min.z, verts[i].z);
+		max.z = std::max(max.z, verts[i].z);
 	}
 
 	rotatedDimensions =
@@ -73,7 +66,7 @@ void BoxCollider::GenerateAABB()
 	};
 }
 
-bool BoxCollider::CheckCollision(BoxCollider& box)
+bool BoxCollider::CheckCollision(const BoxCollider& box) const
 {
 	DirectX::XMFLOAT3 minThis = GetMin();
 	DirectX::XMFLOAT3 maxThis = GetMax();
@@ -91,7 +84,7 @@ bool BoxCollider::CheckCollision(BoxCollider& box)
 	return SeparateAxisTest(box);
 }
 
-DirectX::XMFLOAT3 BoxCollider::GetMin()
+DirectX::XMFLOAT3 BoxCollider::GetMin() const
 {
 	return DirectX::XMFLOAT3(
 		transform->GetPosition().x - rotatedDimensions.x / 2,
@@ -99,7 +92,7 @@ DirectX::XMFLOAT3 BoxCollider::GetMin()
 		transform->GetPosition().z - rotatedDimensions.z / 2);
 }
 
-DirectX::XMFLOAT3 BoxCollider::GetMax()
+DirectX::XMFLOAT3 BoxCollider::GetMax() const
 {
 	return DirectX::XMFLOAT3(
 		transform->GetPosition().x + rotatedDimensions.x / 2,
@@ -107,7 +100,7 @@ DirectX::XMFLOAT3 BoxCollider::GetMax()
 		transform->GetPosition().z + rotatedDimensions.z / 2);
 }
 
-bool BoxCollider::SeparateAxisTest(BoxCollider& box)
+bool BoxCollider::SeparateAxisTest(const BoxCollider& box) const
 {
 	std::vector<DirectX::XMVECTOR> testAxis;
 
@@ -138,7 +131,7 @@ bool BoxCollider::SeparateAxisTest(BoxCollider& box)
 
 	bool collided = false;
 
-	for (int i = 0; i < testAxis.size(); i++)
+	for (unsigned i = 0; i < testAxis.size(); i++)
 	{
 		float distance = std::abs(
 			DirectX::XMVectorGetByIndex(
@@ -159,7 +152,7 @@ bool BoxCollider::SeparateAxisTest(BoxCollider& box)
 	return true;
 }
 
-float BoxCollider::GreatestPointAlongAxis(DirectX::XMVECTOR& axis)
+float BoxCollider::GreatestPointAlongAxis(const DirectX::XMVECTOR& axis) const
 {
 	float greatest = 0.0f;
 	DirectX::XMFLOAT3 point;

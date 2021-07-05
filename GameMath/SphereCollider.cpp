@@ -1,12 +1,12 @@
 #include "SphereCollider.h"
 
-SphereCollider::SphereCollider(DirectX::XMFLOAT3& c, float r, Transform& t) :
-	center (c), radius (r), transform(&t)
+SphereCollider::SphereCollider(DirectX::XMFLOAT3& c, float r, const std::shared_ptr<Transform>& t) :
+	center (c), radius (r), transform(t)
 {
 }
 
-SphereCollider::SphereCollider(Mesh& mesh, Transform& t) :
-	transform(&t)
+SphereCollider::SphereCollider(const Mesh& mesh, const std::shared_ptr<Transform>& t) :
+	transform(t)
 {
 	center = mesh.GetCentroid();
 
@@ -35,12 +35,12 @@ SphereCollider::SphereCollider(Mesh& mesh, Transform& t) :
 
 }
 
-DirectX::XMFLOAT3 SphereCollider::GetCenter()
+DirectX::XMFLOAT3 SphereCollider::GetCenter() const
 {
 	return center;
 }
 
-float SphereCollider::GetRadius()
+float SphereCollider::GetRadius() const
 {
 	return radius;
 }
@@ -55,7 +55,7 @@ void SphereCollider::SetRadius(float r)
 	radius = r;
 }
 
-bool SphereCollider::CheckCollision(SphereCollider& collider)
+bool SphereCollider::CheckCollision(const SphereCollider& collider) const
 {
 	DirectX::XMFLOAT3 position =
 	{

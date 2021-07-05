@@ -67,7 +67,7 @@ MyDemoGame::MyDemoGame(HINSTANCE hInstance)
 	// - "Wide" characters take up more space in memory (hence the name)
 	// - This allows for an extended character set (more fancy letters/symbols)
 	// - Lots of Windows functions want "wide characters", so we use the "L"
-	windowCaption = L"My Super Fancy GGP Game";
+	windowCaption = L"Game Math Project";
 
 	// Custom window size - will be created by Init() later
 	windowWidth = 800;
@@ -81,17 +81,6 @@ MyDemoGame::MyDemoGame(HINSTANCE hInstance)
 // --------------------------------------------------------
 MyDemoGame::~MyDemoGame()
 {
-	// Delete our simple shaders
-	delete vertexShader;
-	delete pixelShader;
-	delete mesh;
-	delete entity1;
-	delete entity2;
-	delete entity3;
-	delete material1;
-	delete material2;
-	delete material3;
-	delete tex;
 }
 
 #pragma endregion
@@ -169,8 +158,7 @@ void MyDemoGame::CreateGeometry()
 	//};
 
 	//mesh = new Mesh(vertices, 8, indices, 36, *device);
-
-	mesh = new Mesh(R"(Meshes\Cube.obj)", *device);
+	mesh = std::make_shared<Mesh>(R"(Meshes\Cube.obj)", *device);
 }
 
 void MyDemoGame::CreateLights()
@@ -192,32 +180,30 @@ void MyDemoGame::LoadShaders()
 {
 	vertexShader = new SimpleVertexShader(device, deviceContext);
 	vertexShader->LoadShaderFile(L"VertexShader.cso");
-
+	
 	pixelShader = new SimplePixelShader(device, deviceContext);
 	pixelShader->LoadShaderFile(L"PixelShader.cso");
-
-
 }
 
 void MyDemoGame::LoadTexturesAndMaterials()
 {
-	tex = new Texture(*device, *deviceContext, L"bricks.jpg");
-
-	material1 = new Material(vertexShader, pixelShader, tex);
+	//tex = std::make_shared<Texture>(Texture(*device, *deviceContext, L"bricks.jpg"));
+	tex.reset(new Texture(*device, *deviceContext, L"bricks.jpg"));
+	material1 = std::make_shared<Material>(vertexShader, pixelShader, tex);
 	material1->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-	material2 = new Material(vertexShader, pixelShader, tex);
+	
+	material2 = std::make_shared<Material>(vertexShader, pixelShader, tex);
 	material2->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-	material3 = new Material(vertexShader, pixelShader, tex);
+	
+	material3 = std::make_shared<Material>(vertexShader, pixelShader, tex);
 	material3->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 }
 
 void MyDemoGame::CreateEntities()
 {
-	entity1 = new EntityCollision(mesh, material1);
-	entity2 = new EntityCollision(mesh, material2);
-	entity3 = new EntityCollision(mesh, material3);
+	entity1 = std::make_shared<EntityCollision>(mesh, material1);
+	entity2 = std::make_shared<EntityCollision>(mesh, material2);
+	entity3 = std::make_shared<EntityCollision>(mesh, material3);
 }
 
 // --------------------------------------------------------
@@ -263,43 +249,30 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	camera.Update(deltaTime);
 	entity1->SetPosition(DirectX::XMFLOAT3(sinf(totalTime) * 3, 0.0f, 0.0f));
 	entity2->SetPosition(DirectX::XMFLOAT3(sinf(totalTime) * 3, cosf(totalTime) * 3, 0.0f));
-	//entity1->SetRotation(Quaternion(DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), M_PI * (sinf(totalTime) + 1)));
-
-	//XMFLOAT3 direction =
-	//{
-	//	camera.GetPosition().x - entity1->GetTransform().position.x,
-	//	camera.GetPosition().y - entity1->GetTransform().position.y,
-	//	camera.GetPosition().z - entity1->GetTransform().position.z
-	//};
-
-	//entity1->SetRotation(Quaternion::LookAt(direction, XMFLOAT3(0.0f, 1.0f, 0.0f)));
-	//Quaternion q = Quaternion(DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), M_PI / 2);
-
-	//Quaternion q = Quaternion::FromEuler(M_PI / 4, 0.0f, 0.0f);
+	
 	entity1->SetRotation(Quaternion(DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), M_PI * cosf(totalTime)));
 	entity2->SetRotation(Quaternion(DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), M_PI * sinf(totalTime)));
 	entity3->SetRotation(Quaternion(DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), M_PI * sinf(totalTime)));
-	//entity1->SetScale(DirectX::XMFLOAT3(sinf(totalTime), sinf(totalTime), sinf(totalTime)));
-
+	
 	entity1->GetBoxCollider().GenerateAABB();
 	entity2->GetBoxCollider().GenerateAABB();
-
+	
 	material1->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	material2->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	material3->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-
+	
 	if (entity1->GetBoxCollider().CheckCollision(entity2->GetBoxCollider()))
 	{
 		material1->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 		material2->SetColor(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));
 	}
-
+	
 	if (entity1->GetBoxCollider().CheckCollision(entity3->GetBoxCollider()))
 	{
 		material1->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 		material3->SetColor(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f));
 	}
-
+	
 	if (entity2->GetBoxCollider().CheckCollision(entity3->GetBoxCollider()))
 	{
 		material2->SetColor(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));

@@ -1,52 +1,52 @@
 #include "Entity.h"
 
-Entity::Entity(Mesh* m, Material* mat)
+Entity::Entity(const std::shared_ptr<Mesh>& m, const std::shared_ptr<Material>& mat) :
+	mesh(m), material(mat)
 {
-	mesh = m;
-	material = mat;
-	transform = Transform();
-}
-
-Entity::~Entity()
-{
+	transform = std::make_shared<Transform>();
 }
 
 DirectX::XMFLOAT4X4 Entity::GetWorldMatrix()
 {
-	return transform.GetWorldMatrix();
+	return transform->GetWorldMatrix();
 }
 
-Transform Entity::GetTransform()
+DirectX::XMFLOAT4X4 Entity::GetWorldMatrix() const
+{
+	return transform->GetWorldMatrix();
+}
+
+std::shared_ptr<Transform> Entity::GetTransform() const
 {
 	return transform;
 }
 
 void Entity::SetTransform(Transform& t)
 {
-	transform = t;
+	transform.reset(&t);
 }
 
 void Entity::SetPosition(DirectX::XMFLOAT3 p)
 {
-	transform.SetPosition(p);
+	transform->SetPosition(p);
 }
 
 void Entity::SetRotation(Quaternion& q)
 {
-	transform.SetRotation(q);
+	transform->SetRotation(q);
 }
 
 void Entity::SetScale(DirectX::XMFLOAT3 s)
 {
-	transform.SetScale(s);
+	transform->SetScale(s);
 }
 
-void Entity::SetMaterial(Material* mat)
+void Entity::SetMaterial(Material& mat)
 {
-	material = mat;
+	material.reset(&mat);
 }
 
-void Entity::Draw(ID3D11DeviceContext* dc, Camera& camera, DirectionalLight& light)
+void Entity::Draw(ID3D11DeviceContext* dc, const Camera& camera, const DirectionalLight& light)
 {
 	material->Draw(camera, light, GetWorldMatrix());
 	mesh->Draw(dc);

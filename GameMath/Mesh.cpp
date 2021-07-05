@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include <fstream>
 
-Mesh::Mesh(Vertex* vertices, int numVerts, unsigned* indices, int numIndices, ID3D11Device& device)
+Mesh::Mesh(const Vertex* vertices, int numVerts, unsigned* indices, int numIndices, ID3D11Device& device)
 {
 	InitializeMinMax();
 
@@ -150,37 +150,37 @@ void Mesh::Draw(ID3D11DeviceContext* context)
 	context->DrawIndexed(numberOfIndices, 0, 0);
 }
 
-ID3D11Buffer* Mesh::GetVertexBuffer()
+ID3D11Buffer* Mesh::GetVertexBuffer() const
 {
 	return vertexBuffer;
 }
 
-ID3D11Buffer* Mesh::GetIndexBuffer()
+ID3D11Buffer* Mesh::GetIndexBuffer() const
 {
 	return indexBuffer;
 }
 
-int Mesh::GetIndexCount()
+int Mesh::GetIndexCount() const
 {
 	return numberOfIndices;
 }
 
-DirectX::XMFLOAT3 Mesh::GetCentroid()
+DirectX::XMFLOAT3 Mesh::GetCentroid() const
 {
 	return centroid;
 }
 
-DirectX::XMFLOAT3 Mesh::GetMin()
+DirectX::XMFLOAT3 Mesh::GetMin() const
 {
 	return min;
 }
 
-DirectX::XMFLOAT3 Mesh::GetMax()
+DirectX::XMFLOAT3 Mesh::GetMax() const
 {
 	return max;
 }
 
-void Mesh::CreateVertexBuffer(Vertex* verts, int numVerts, ID3D11Device& device)
+void Mesh::CreateVertexBuffer(const Vertex* verts, int numVerts, ID3D11Device& device)
 {
 	// Create the VERTEX BUFFER description -----------------------------------
 	// - The description is created on the stack because we only need

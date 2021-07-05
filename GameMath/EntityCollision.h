@@ -5,7 +5,7 @@ class EntityCollision :
 	public Entity
 {
 public:
-	EntityCollision(Mesh* m, Material* mat);
+	EntityCollision(const std::shared_ptr<Mesh>& m, const std::shared_ptr<Material>& mat);
 	BoxCollider& GetBoxCollider();
 private:
 	BoxCollider collider;

@@ -8,8 +8,8 @@ class Texture
 public:
 	Texture(ID3D11Device&, ID3D11DeviceContext&, const wchar_t* path);
 	~Texture();
-	ID3D11ShaderResourceView* GetResourceView();
-	ID3D11SamplerState* GetSampler();
+	ID3D11ShaderResourceView* GetResourceView() const;
+	ID3D11SamplerState* GetSampler() const;
 
 private:
 	ID3D11ShaderResourceView* resourceView;

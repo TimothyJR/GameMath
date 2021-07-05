@@ -6,19 +6,19 @@
 class SphereCollider
 {
 public:
-	SphereCollider(DirectX::XMFLOAT3&, float, Transform&);
-	SphereCollider(Mesh& mesh, Transform&);
+	SphereCollider(DirectX::XMFLOAT3&, float, const std::shared_ptr<Transform>& t);
+	SphereCollider(const Mesh& mesh, const std::shared_ptr<Transform>& t);
 
-	DirectX::XMFLOAT3 GetCenter();
-	float GetRadius();
+	DirectX::XMFLOAT3 GetCenter() const;
+	float GetRadius() const;
 
 	void SetCenter(DirectX::XMFLOAT3&);
 	void SetRadius(float);
 
-	bool CheckCollision(SphereCollider& collider);
+	bool CheckCollision(const SphereCollider& collider) const;
 
 private:
 	DirectX::XMFLOAT3 center;
 	float radius;
-	Transform* transform;
+	std::shared_ptr<Transform> transform;
 };

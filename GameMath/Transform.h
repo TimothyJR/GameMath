@@ -6,18 +6,22 @@ class Transform
 {
 public:
 	Transform();
-	Transform(DirectX::XMFLOAT3& pos);
-	Transform(DirectX::XMFLOAT3& pos, Quaternion& rot, DirectX::XMFLOAT3& s);
+	Transform(const DirectX::XMFLOAT3& pos);
+	Transform(const DirectX::XMFLOAT3& pos, const Quaternion& rot, const DirectX::XMFLOAT3& s);
+	Transform(const Transform&);
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
-	DirectX::XMFLOAT3 GetPosition();
-	Quaternion GetRotation();
-	DirectX::XMFLOAT3 GetScale();
+	DirectX::XMFLOAT4X4 GetWorldMatrix() const;
+	DirectX::XMFLOAT3 GetPosition() const;
+	Quaternion GetRotation() const;
+	DirectX::XMFLOAT3 GetScale() const;
 
-	void SetPosition(DirectX::XMFLOAT3&);
-	void SetRotation(Quaternion&);
-	void SetScale(DirectX::XMFLOAT3&);
+	void SetPosition(const DirectX::XMFLOAT3&);
+	void SetRotation(const Quaternion&);
+	void SetScale(const DirectX::XMFLOAT3&);
 
 private:
+	void CalculateWorldMatrix(DirectX::XMFLOAT4X4& storage) const;
+
 	DirectX::XMFLOAT3 position;
 	Quaternion rotation;
 	DirectX::XMFLOAT3 scale;

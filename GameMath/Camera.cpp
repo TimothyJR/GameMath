@@ -19,17 +19,17 @@ Camera::Camera()
 	DirectX::XMStoreFloat4x4(&projection, DirectX::XMMatrixIdentity());
 }
 
-DirectX::XMFLOAT4X4 Camera::GetViewMatrix()
+DirectX::XMFLOAT4X4 Camera::GetViewMatrix() const
 {
 	return view;
 }
 
-DirectX::XMFLOAT4X4 Camera::GetProjectionMatrix()
+DirectX::XMFLOAT4X4 Camera::GetProjectionMatrix() const
 {
 	return projection;
 }
 
-void Camera::Update(float deltaTime)
+void Camera::Update(const float deltaTime)
 {
 	DirectX::XMStoreFloat3(&direction, DirectX::XMVector3Rotate(
 		DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
@@ -89,7 +89,7 @@ void Camera::Update(float deltaTime)
 	}
 }
 
-void Camera::UpdateRotation(float mouseX, float mouseY)
+void Camera::UpdateRotation(const float mouseX, const float mouseY)
 {
 	xRotation += mouseY * 0.005f;
 	yRotation += mouseX * 0.005f;
@@ -119,7 +119,7 @@ DirectX::XMFLOAT4X4 Camera::CalculateProjection(float aspectRatio)
 	return DirectX::XMFLOAT4X4();
 }
 
-DirectX::XMFLOAT3 Camera::GetPosition()
+DirectX::XMFLOAT3 Camera::GetPosition() const
 {
 	return position;
 }

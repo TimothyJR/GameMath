@@ -53,16 +53,17 @@ private:
 	void CreateMatrices();
 
 private:
-	Mesh* mesh;
-	EntityCollision* entity1;
-	EntityCollision* entity2;
-	EntityCollision* entity3;
-	Material* material1;
-	Material* material2;
-	Material* material3;
+	std::shared_ptr<Mesh> mesh;
+	std::shared_ptr<EntityCollision> entity1;
+	std::shared_ptr<EntityCollision> entity2;
+	std::shared_ptr<EntityCollision> entity3;
+	std::shared_ptr<Material> material1;
+	std::shared_ptr<Material> material2;
+	std::shared_ptr<Material> material3;
+	std::shared_ptr<Texture> tex;
 	DirectionalLight light;
 	Camera camera;
-	Texture* tex;
+
 
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;

@@ -5,12 +5,12 @@ Quaternion::Quaternion() :
 {
 }
 
-Quaternion::Quaternion(DirectX::XMFLOAT4& q) :
+Quaternion::Quaternion(const DirectX::XMFLOAT4& q) :
 	Quaternion(q.x, q.y, q.z, q.w)
 {
 }
 
-Quaternion::Quaternion(DirectX::XMFLOAT3& v, float a)
+Quaternion::Quaternion(const DirectX::XMFLOAT3& v, float a)
 {
 	float s = sin(a / 2.0f);
 
@@ -27,7 +27,7 @@ Quaternion::Quaternion(float _x, float _y, float _z, float _w) :
 {
 }
 
-Quaternion Quaternion::Multiply(Quaternion& q)
+Quaternion Quaternion::Multiply(const Quaternion& q) const
 {
 	DirectX::XMVECTOR v = DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(x, y, z));
 	DirectX::XMVECTOR qv = DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(q.x, q.y, q.z));
@@ -37,38 +37,84 @@ Quaternion Quaternion::Multiply(Quaternion& q)
 
 	float dot = DirectX::XMVectorGetByIndex(DirectX::XMVector3Dot(v, qv), 0);
 
-	Quaternion newQ = Quaternion();
-
-	newQ.w = q.w * w - dot;
-	newQ.x = q.w * x + w * q.x + cross.x;
-	newQ.y = q.w * y + w * q.y + cross.y;
-	newQ.z = q.w * z + w * q.z + cross.z;
+	Quaternion newQ = Quaternion(
+		q.w * w - dot,
+		q.w * x + w * q.x + cross.x,
+		q.w * y + w * q.y + cross.y,
+		q.w * z + w * q.z + cross.z
+	);
 
 	return newQ;
 }
 
-DirectX::XMFLOAT3 Quaternion::RotateVector(DirectX::XMFLOAT3& v)
+Quaternion Quaternion::Slerp(const Quaternion& q, float t) const
+{
+	//Quaternion returnValue = q.Multiply(this->Inverse());
+	//returnValue = QuaternionScaledToT({ returnValue.x, returnValue.y, returnValue.z }, returnValue.w, t).Multiply(*this);
+	//return returnValue;
+
+	float dot = DirectX::XMVectorGetByIndex(
+		DirectX::XMVector3Dot(
+			DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(x, y, z)),
+			DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(q.x, q.y, q.z))),
+		0);
+
+	float cosOmega = w * q.w + dot;
+	Quaternion returnQuaternion = Quaternion(q);
+
+	if (cosOmega < 0)
+	{
+		returnQuaternion.w = -returnQuaternion.w;
+		returnQuaternion.x = -returnQuaternion.x;
+		returnQuaternion.y = -returnQuaternion.y;
+		returnQuaternion.z = -returnQuaternion.z;
+		cosOmega = -cosOmega;
+	}
+
+	float k0;
+	float k1;
+
+	if (cosOmega > 0.9999f)
+	{
+		k0 = 1 - t;
+		k1 = t;
+	}
+	else
+	{
+		float sinOmega = sqrtf(1 - cosOmega * cosOmega);
+
+		float omega = atan2f(sinOmega, cosOmega);
+		float oneOver = 1 / sinOmega;
+
+		k0 = sin((1 - t) * omega) * oneOver;
+		k1 = sin(t * omega) * oneOver;
+	}
+
+	returnQuaternion.w = w * k0 + returnQuaternion.w * k1;
+	returnQuaternion.x = x * k0 + returnQuaternion.x * k1;
+	returnQuaternion.y = y * k0 + returnQuaternion.y * k1;
+	returnQuaternion.z = z * k0 + returnQuaternion.z * k1;
+
+	return returnQuaternion;
+}
+
+DirectX::XMFLOAT3 Quaternion::RotateVector(const DirectX::XMFLOAT3& v)
 {
 	DirectX::XMFLOAT3 u = {x, y, z};
 
+	DirectX::XMVECTOR vV = DirectX::XMLoadFloat3(&v);
+	DirectX::XMVECTOR uV = DirectX::XMLoadFloat3(&u);
+
 	DirectX::XMFLOAT3 cross;
 
-	DirectX::XMStoreFloat3(&cross,
-		DirectX::XMVector3Cross(
-			DirectX::XMLoadFloat3(&u),
-			DirectX::XMLoadFloat3(&v)
-		));
+	DirectX::XMStoreFloat3(&cross, DirectX::XMVector3Cross(uV, vV));
 
 	float dotuv = DirectX::XMVectorGetByIndex(
-		DirectX::XMVector3Dot(
-			DirectX::XMLoadFloat3(&u),
-			DirectX::XMLoadFloat3(&v)),
+		DirectX::XMVector3Dot(uV, vV),
 		0);
 
 	float dotuu = DirectX::XMVectorGetByIndex(
-		DirectX::XMVector3Dot(
-			DirectX::XMLoadFloat3(&u),
-			DirectX::XMLoadFloat3(&u)),
+		DirectX::XMVector3Dot(uV, uV),
 		0);
 
 
@@ -107,58 +153,6 @@ DirectX::XMFLOAT3 Quaternion::ToEuler()
 	return euler;
 }
 
-Quaternion Quaternion::Slerp(Quaternion& q, float t)
-{
-	//Quaternion returnValue = q.Multiply(this->Inverse());
-	//returnValue = QuaternionScaledToT({ returnValue.x, returnValue.y, returnValue.z }, returnValue.w, t).Multiply(*this);
-	//return returnValue;
-
-	float dot = DirectX::XMVectorGetByIndex(
-		DirectX::XMVector3Dot(
-			DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(x, y, z)),
-			DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(q.x, q.y, q.z))),
-		0);
-
-	float cosOmega = w * q.w + dot;
-
-	if (cosOmega < 0)
-	{
-		q.w = -q.w;
-		q.x = -q.x;
-		q.y = -q.y;
-		q.z = -q.z;
-		cosOmega = -cosOmega;
-	}
-
-	float k0;
-	float k1;
-
-	if (cosOmega > 0.9999f)
-	{
-		k0 = 1 - t;
-		k1 = t;
-	}
-	else
-	{
-		float sinOmega = sqrtf(1 - cosOmega * cosOmega);
-
-		float omega = atan2f(sinOmega, cosOmega);
-		float oneOver = 1 / sinOmega;
-
-		k0 = sin((1 - t) * omega) * oneOver;
-		k1 = sin(t * omega) * oneOver;
-	}
-
-	Quaternion returnQuaternion = Quaternion();
-
-	returnQuaternion.w = w * k0 + q.w * k1;
-	returnQuaternion.x = x * k0 + q.x * k1;
-	returnQuaternion.y = y * k0 + q.y * k1;
-	returnQuaternion.z = z * k0 + q.z * k1;
-
-	return returnQuaternion;
-}
-
 Quaternion Quaternion::FromEuler(float roll, float pitch, float yaw)
 {
 	float cosRoll = cosf(roll * 0.5f);
@@ -177,12 +171,12 @@ Quaternion Quaternion::FromEuler(float roll, float pitch, float yaw)
 	);
 }
 
-Quaternion Quaternion::LookAt(DirectX::XMFLOAT3& direction)
+Quaternion Quaternion::LookAt(const DirectX::XMFLOAT3& direction)
 {
 	return LookAt(direction, DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f));
 }
 
-Quaternion Quaternion::LookAt(DirectX::XMFLOAT3& direction, DirectX::XMFLOAT3& up)
+Quaternion Quaternion::LookAt(const DirectX::XMFLOAT3& direction, const DirectX::XMFLOAT3& up)
 {
 	DirectX::XMVECTOR lookAtV = DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&direction));
 	DirectX::XMVECTOR rightV = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::XMLoadFloat3(&up), lookAtV));
@@ -265,13 +259,13 @@ Quaternion Quaternion::LookAt(DirectX::XMFLOAT3& direction, DirectX::XMFLOAT3& u
 	//return Quaternion(rotationAxis, rotationAngle);
 }
 
-Quaternion Quaternion::Inverse()
+Quaternion Quaternion::Inverse() const
 {
 	Quaternion(-x, -y, -z, w);
 	return Quaternion();
 }
 
-Quaternion Quaternion::QuaternionScaledToT(DirectX::XMFLOAT3& v, float a, float t)
+Quaternion Quaternion::QuaternionScaledToT(const DirectX::XMFLOAT3& v, float a, float t) const
 {
 	DirectX::XMFLOAT3 returnVector;
 	DirectX::XMVECTOR vector = DirectX::XMLoadFloat3(&v);

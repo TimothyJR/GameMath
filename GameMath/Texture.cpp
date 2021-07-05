@@ -20,12 +20,12 @@ Texture::~Texture()
 	delete sampler;
 }
 
-ID3D11ShaderResourceView* Texture::GetResourceView()
+ID3D11ShaderResourceView* Texture::GetResourceView() const
 {
 	return resourceView;
 }
 
-ID3D11SamplerState* Texture::GetSampler()
+ID3D11SamplerState* Texture::GetSampler() const
 {
 	return sampler;
 }

@@ -1,6 +1,6 @@
 #include "EntityCollision.h"
 
-EntityCollision::EntityCollision(Mesh* m, Material* mat)
+EntityCollision::EntityCollision(const std::shared_ptr<Mesh>& m, const std::shared_ptr<Material>& mat)
 	: Entity(m, mat), collider(BoxCollider(*m, transform))
 {
 }
