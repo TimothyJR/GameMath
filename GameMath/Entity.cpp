@@ -1,6 +1,6 @@
 #include "Entity.h"
 
-Entity::Entity(const std::shared_ptr<Mesh>& m, const std::shared_ptr<Material>& mat) :
+Entity::Entity(const Mesh* m, const Material* mat) :
 	mesh(m), material(mat)
 {
 	transform = std::make_shared<Transform>();
@@ -31,7 +31,7 @@ void Entity::SetPosition(DirectX::XMFLOAT3 p)
 	transform->SetPosition(p);
 }
 
-void Entity::SetRotation(Quaternion& q)
+void Entity::SetRotation(Quaternion&& q)
 {
 	transform->SetRotation(q);
 }
@@ -46,7 +46,7 @@ void Entity::SetMaterial(Material& mat)
 	material.reset(&mat);
 }
 
-void Entity::Draw(ID3D11DeviceContext* dc, const Camera& camera, const DirectionalLight& light)
+void Entity::Draw(ID3D11DeviceContext* dc, const Camera& camera, const DirectionalLight& light) const
 {
 	material->Draw(camera, light, GetWorldMatrix());
 	mesh->Draw(dc);

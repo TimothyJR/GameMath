@@ -139,7 +139,7 @@ Mesh::~Mesh()
 	indexBuffer->Release();
 }
 
-void Mesh::Draw(ID3D11DeviceContext* context)
+void Mesh::Draw(ID3D11DeviceContext* context) const
 {
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;

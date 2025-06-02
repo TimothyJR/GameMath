@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "Material.h"
 #include "DirectionalLight.h"
+#include "Collision.h"
 
 // Include run-time memory checking in debug builds, so 
 // we can be notified of memory leaks

@@ -9,12 +9,12 @@
 class Material
 {
 public:
-	Material(SimpleVertexShader*, SimplePixelShader*, const std::shared_ptr<Texture>&);
-	void Draw(const Camera&, const DirectionalLight&, const DirectX::XMFLOAT4X4);
+	Material(SimpleVertexShader*, SimplePixelShader*, Texture*);
+	void Draw(const Camera&, const DirectionalLight&, const DirectX::XMFLOAT4X4) const;
 
 	SimpleVertexShader* GetVertexShader() const;
 	SimplePixelShader* GetPixelShader() const;
-	std::shared_ptr<Texture> GetTexture() const;
+	Texture* GetTexture() const;
 	DirectX::XMFLOAT4 GetColor() const;
 
 	void SetTexture(Texture&);

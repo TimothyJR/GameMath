@@ -94,7 +94,9 @@ void Transform::CalculateWorldMatrix(DirectX::XMFLOAT4X4& storage) const
 {
 	// Multiply order -> Scale -> Rotation -> Translation
 	DirectX::XMMATRIX t = DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&position));
-	DirectX::XMMATRIX r = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&DirectX::XMFLOAT4(rotation.x, rotation.y, rotation.z, rotation.w)));
+
+	DirectX::XMFLOAT4 rotationFloat4 = DirectX::XMFLOAT4(rotation.x, rotation.y, rotation.z, rotation.w);
+	DirectX::XMMATRIX r = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&rotationFloat4));
 	DirectX::XMMATRIX s = DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&scale));
 	DirectX::XMMATRIX w = DirectX::XMMatrixMultiply(DirectX::XMMatrixMultiply(s, r), t);
 	DirectX::XMStoreFloat4x4(&storage, DirectX::XMMatrixTranspose(w));

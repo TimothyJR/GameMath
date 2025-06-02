@@ -1,6 +1,6 @@
 #include "Material.h"
 
-Material::Material(SimpleVertexShader* v, SimplePixelShader* p, const std::shared_ptr<Texture>& tex) :
+Material::Material(SimpleVertexShader* v, SimplePixelShader* p, Texture* tex) :
 	vertexShader(v),
 	pixelShader(p),
 	texture(tex),
@@ -8,7 +8,7 @@ Material::Material(SimpleVertexShader* v, SimplePixelShader* p, const std::share
 {
 }
 
-void Material::Draw(const Camera& camera, const DirectionalLight& light, const DirectX::XMFLOAT4X4 world)
+void Material::Draw(const Camera& camera, const DirectionalLight& light, const DirectX::XMFLOAT4X4 world) const
 {
 	vertexShader->SetMatrix4x4("view", camera.GetViewMatrix());
 	vertexShader->SetMatrix4x4("projection", camera.GetProjectionMatrix());
@@ -33,9 +33,9 @@ SimplePixelShader* Material::GetPixelShader() const
 	return pixelShader;
 }
 
-std::shared_ptr<Texture> Material::GetTexture() const
+Texture* Material::GetTexture() const
 {
-	return texture;
+	return texture.get();
 }
 
 DirectX::XMFLOAT4 Material::GetColor() const

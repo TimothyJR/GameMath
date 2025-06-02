@@ -1,12 +1,13 @@
 #include "BoxCollider.h"
 
-BoxCollider::BoxCollider(const DirectX::XMFLOAT3& c, const DirectX::XMFLOAT3& d, const std::shared_ptr<Transform>& t) :
-	center(c), dimensions(d), transform(t)
+BoxCollider::BoxCollider(const DirectX::XMFLOAT3& c, const DirectX::XMFLOAT3& d, Transform* t) :
+	Collider(t), center(c), dimensions(d)
 {
 	GenerateAABB();
 }
 
-BoxCollider::BoxCollider(const Mesh& mesh, const std::shared_ptr<Transform>& t) :
+BoxCollider::BoxCollider(const Mesh& mesh, Transform* t) :
+	Collider(t),
 	center(mesh.GetCentroid()),
 	dimensions(
 		{
@@ -14,8 +15,7 @@ BoxCollider::BoxCollider(const Mesh& mesh, const std::shared_ptr<Transform>& t) 
 		mesh.GetMax().y - mesh.GetMin().y,
 		mesh.GetMax().z - mesh.GetMin().z
 		}),
-	rotatedDimensions(dimensions),
-	transform(t)
+	rotatedDimensions(dimensions)
 {
 	GenerateAABB();
 }
@@ -66,24 +66,6 @@ void BoxCollider::GenerateAABB()
 	};
 }
 
-bool BoxCollider::CheckCollision(const BoxCollider& box) const
-{
-	DirectX::XMFLOAT3 minThis = GetMin();
-	DirectX::XMFLOAT3 maxThis = GetMax();
-	DirectX::XMFLOAT3 minOther = box.GetMin();
-	DirectX::XMFLOAT3 maxOther = box.GetMax();
-
-
-	if (maxThis.x < minOther.x || minThis.x > maxOther.x ||
-		maxThis.y < minOther.y || minThis.y > maxOther.y ||
-		maxThis.z < minOther.z || minThis.z > maxOther.z)
-	{
-		return false;
-	}
-
-	return SeparateAxisTest(box);
-}
-
 DirectX::XMFLOAT3 BoxCollider::GetMin() const
 {
 	return DirectX::XMFLOAT3(
@@ -98,58 +80,6 @@ DirectX::XMFLOAT3 BoxCollider::GetMax() const
 		transform->GetPosition().x + rotatedDimensions.x / 2,
 		transform->GetPosition().y + rotatedDimensions.y / 2,
 		transform->GetPosition().z + rotatedDimensions.z / 2);
-}
-
-bool BoxCollider::SeparateAxisTest(const BoxCollider& box) const
-{
-	std::vector<DirectX::XMVECTOR> testAxis;
-
-	testAxis.push_back(DirectX::XMLoadFloat3(&transform->GetRotation().RotateVector(DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f))));
-	testAxis.push_back(DirectX::XMLoadFloat3(&transform->GetRotation().RotateVector(DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f))));
-	testAxis.push_back(DirectX::XMLoadFloat3(&transform->GetRotation().RotateVector(DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f))));
-	testAxis.push_back(DirectX::XMLoadFloat3(&box.transform->GetRotation().RotateVector(DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f))));
-	testAxis.push_back(DirectX::XMLoadFloat3(&box.transform->GetRotation().RotateVector(DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f))));
-	testAxis.push_back(DirectX::XMLoadFloat3(&box.transform->GetRotation().RotateVector(DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f))));
-
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 3; j < 6; j++)
-		{
-			if (std::abs(DirectX::XMVectorGetByIndex(DirectX::XMVector3Dot(testAxis[i], testAxis[j]), 0)) < 0.995f)
-			{
-				testAxis.push_back(DirectX::XMVector3Normalize(DirectX::XMVector3Cross(testAxis[i], testAxis[j])));
-			}
-		}
-	}
-
-	DirectX::XMFLOAT3 posDifference = DirectX::XMFLOAT3(
-		transform->GetPosition().x - box.transform->GetPosition().x,
-		transform->GetPosition().y - box.transform->GetPosition().y,
-		transform->GetPosition().z - box.transform->GetPosition().z);
-
-	DirectX::XMVECTOR positionDifference = DirectX::XMLoadFloat3(&posDifference);
-
-	bool collided = false;
-
-	for (unsigned i = 0; i < testAxis.size(); i++)
-	{
-		float distance = std::abs(
-			DirectX::XMVectorGetByIndex(
-				DirectX::XMVector3Dot(
-					positionDifference,
-					testAxis[i]),
-				0));
-
-		float leftSide = GreatestPointAlongAxis(testAxis[i]);
-		float rightSide = box.GreatestPointAlongAxis(testAxis[i]);
-
-		if (distance > leftSide + rightSide)
-		{
-			return false;
-		}
-	}
-
-	return true;
 }
 
 float BoxCollider::GreatestPointAlongAxis(const DirectX::XMVECTOR& axis) const

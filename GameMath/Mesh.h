@@ -14,7 +14,7 @@ public:
 	Mesh(const Vertex*, int, unsigned*, int, ID3D11Device&);
 	Mesh(const char* filePath, ID3D11Device&);
 	~Mesh();
-	void Draw(ID3D11DeviceContext*);
+	void Draw(ID3D11DeviceContext*) const;
 	ID3D11Buffer* GetVertexBuffer() const;
 	ID3D11Buffer* GetIndexBuffer() const;
 	int GetIndexCount() const;

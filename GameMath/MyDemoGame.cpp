@@ -120,44 +120,10 @@ bool MyDemoGame::Init()
 }
 
 // --------------------------------------------------------
-// Creates the geometry we're going to draw - a single triangle for now
+// Loads a mesh for our geometry
 // --------------------------------------------------------
 void MyDemoGame::CreateGeometry()
 {
-	//Vertex vertices[] = 
-	//{
-	//	{ XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)},
-	//	{ XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)},
-	//	{ XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)},
-	//	{ XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)},
-	//	{ XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-	//	{ XMFLOAT3(0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-	//	{ XMFLOAT3(0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-	//	{ XMFLOAT3(0.5f,  0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-	//};
-	//
-	//unsigned indices[] = 
-	//{
-	//		1, 2, 0, // -x
-	//		3, 2, 1,
-	//
-	//		6, 5, 4, // +x
-	//		6, 7, 5,
-	//
-	//		5, 1, 0, // -y
-	//		4, 5, 0,
-	//
-	//		7, 6, 2, // +y
-	//		3, 7, 2,
-	//
-	//		6, 4, 0, // -z
-	//		2, 6, 0,
-	//
-	//		7, 3, 1, // +z
-	//		5, 7, 1,
-	//};
-
-	//mesh = new Mesh(vertices, 8, indices, 36, *device);
 	mesh = std::make_shared<Mesh>(R"(Meshes\Cube.obj)", *device);
 }
 
@@ -189,21 +155,21 @@ void MyDemoGame::LoadTexturesAndMaterials()
 {
 	//tex = std::make_shared<Texture>(Texture(*device, *deviceContext, L"bricks.jpg"));
 	tex.reset(new Texture(*device, *deviceContext, L"bricks.jpg"));
-	material1 = std::make_shared<Material>(vertexShader, pixelShader, tex);
+	material1 = std::make_shared<Material>(vertexShader, pixelShader, tex.get());
 	material1->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	
-	material2 = std::make_shared<Material>(vertexShader, pixelShader, tex);
+	material2 = std::make_shared<Material>(vertexShader, pixelShader, tex.get());
 	material2->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	
-	material3 = std::make_shared<Material>(vertexShader, pixelShader, tex);
+	material3 = std::make_shared<Material>(vertexShader, pixelShader, tex.get());
 	material3->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 }
 
 void MyDemoGame::CreateEntities()
 {
-	entity1 = std::make_shared<EntityCollision>(mesh, material1);
-	entity2 = std::make_shared<EntityCollision>(mesh, material2);
-	entity3 = std::make_shared<EntityCollision>(mesh, material3);
+	entity1 = std::make_shared<EntityCollision>(mesh.get(), material1.get());
+	entity2 = std::make_shared<EntityCollision>(mesh.get(), material2.get());
+	entity3 = std::make_shared<EntityCollision>(mesh.get(), material3.get());
 }
 
 // --------------------------------------------------------
@@ -250,6 +216,7 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	entity1->SetPosition(DirectX::XMFLOAT3(sinf(totalTime) * 3, 0.0f, 0.0f));
 	entity2->SetPosition(DirectX::XMFLOAT3(sinf(totalTime) * 3, cosf(totalTime) * 3, 0.0f));
 	
+
 	entity1->SetRotation(Quaternion(DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), M_PI * cosf(totalTime)));
 	entity2->SetRotation(Quaternion(DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), M_PI * sinf(totalTime)));
 	entity3->SetRotation(Quaternion(DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), M_PI * sinf(totalTime)));
@@ -261,19 +228,19 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	material2->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	material3->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	
-	if (entity1->GetBoxCollider().CheckCollision(entity2->GetBoxCollider()))
+	if (Collision::CheckCollision(entity1->GetBoxCollider(), entity2->GetBoxCollider()))
 	{
 		material1->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 		material2->SetColor(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));
 	}
 	
-	if (entity1->GetBoxCollider().CheckCollision(entity3->GetBoxCollider()))
+	if (Collision::CheckCollision(entity1->GetBoxCollider(), entity3->GetBoxCollider()))
 	{
 		material1->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 		material3->SetColor(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f));
 	}
 	
-	if (entity2->GetBoxCollider().CheckCollision(entity3->GetBoxCollider()))
+	if (Collision::CheckCollision(entity2->GetBoxCollider(), entity3->GetBoxCollider()))
 	{
 		material2->SetColor(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));
 		material3->SetColor(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f));

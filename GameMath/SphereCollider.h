@@ -1,24 +1,23 @@
 #pragma once
 #include <DirectXMath.h>
+#include "Collider.h"
 #include "Transform.h"
 #include "Mesh.h"
 
-class SphereCollider
+class SphereCollider :
+	public Collider
 {
 public:
-	SphereCollider(DirectX::XMFLOAT3&, float, const std::shared_ptr<Transform>& t);
-	SphereCollider(const Mesh& mesh, const std::shared_ptr<Transform>& t);
+	SphereCollider(DirectX::XMFLOAT3&, float, Transform* t);
+	SphereCollider(const Mesh& mesh, Transform* t);
 
 	DirectX::XMFLOAT3 GetCenter() const;
+	DirectX::XMFLOAT3 GetWorldCenter() const;
 	float GetRadius() const;
 
 	void SetCenter(DirectX::XMFLOAT3&);
 	void SetRadius(float);
-
-	bool CheckCollision(const SphereCollider& collider) const;
-
 private:
 	DirectX::XMFLOAT3 center;
 	float radius;
-	std::shared_ptr<Transform> transform;
 };
